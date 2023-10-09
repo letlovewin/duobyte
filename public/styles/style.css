@@ -6,6 +6,22 @@
     background-size: 15px 15px;
 }
 
+p {
+    user-select: none;
+}
+
+h1 {
+    user-select: none;
+}
+
+h2 {
+    user-select: none;
+}
+
+h3 {
+    user-select: none;
+}
+
 .error {
     color: #e93e20;
     user-select: none;
