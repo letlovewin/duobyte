@@ -1,0 +1,19 @@
+.dotted {
+    background-image: radial-gradient(#838383 10%, transparent 10%),
+          radial-gradient(#838383 10%, transparent 10%);
+    background-color: #fff;
+    background-position: 0 0, 15px 15px;
+    background-size: 15px 15px;
+}
+
+body {
+    background-color: #1b1714;
+}
+
+p {
+    color: #f7ece6;
+}
+
+h1 {
+    color: #f7ece6;
+}
