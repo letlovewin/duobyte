@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-analytics.js";
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js";
 const firebaseConfig = {
   apiKey: "AIzaSyAXzjL21HzpSMWhTuHUrjKV-NcY8qjbnuU",
   authDomain: "duobyte-471b8.firebaseapp.com",
@@ -34,28 +34,33 @@ function validateUserName(text) {
 }
 function writeUserData() {
   const db = getDatabase();
-  if (validateEmail($("#email").val()) == true) {
-    if (validateUserName($("#username").val()) == true) {
-      let parsed_email = $("#email").val().replace(/[^a-zA-Z0-9]/g,'');
-      const reference = ref(db, 'users/' + parsed_email);
-      set(reference, {
-        username: $("#username").val(),
-        email: $("#email").val(),
-        password: $("#password").val()
+  if (validateEmail($("#email").val())==true){
+    let parsed_email = $("#email").val().replace(/[^a-zA-Z0-9]/g,'');
+    const emailRef = ref(db,'users/'+parsed_email+'/email');
+    onValue(emailRef, (snapshot)=>{
+      const pwRef = ref(db,'users/'+parsed_email+'/password');
+      onValue(pwRef,(snapshot2)=>{
+        if((snapshot.val()==null||snapshot2.val()==null)||(snapshot2.val()!=$("#password").val())) {
+          if($("#email-error-dne").length==0){
+            $("#main").append(`<p id="email-error-dne" class="error">Invalid email or password.</p>`);
+          }
+        } else if(snapshot2.val()==$("#password").val()) {
+          console.log("Valid combination.");
+        }
       })
-    } else {
-      if($("#username-error").length==0){
-        $("#main").append(`<p id="username-error" class="error">Please enter a valid username (alphanumeric characters only).</p>`);
-      }
-    }
-
+    })
+    /*
+    
+    */
   } else {
     if($("#email-error").length==0){
       $("#main").append(`<p id="email-error" class="error">Please enter a valid email.</p>`);
     }
   }
+  
+  
 }
 
-$("#signup-btn").on("click", function (e) {
+$("#signin-btn").on("click", function (e) {
   writeUserData();
 })
