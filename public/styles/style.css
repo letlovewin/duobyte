@@ -6,28 +6,6 @@
     background-size: 15px 15px;
 }
 
-body {
-    background-color: #1b1714;
-}
-
-p {
-    color: #f7ece6;
-    user-select: none;
-}
-
-h1 {
-    color: #f7ece6;
-    user-select: none;
-}
-h2 {
-    color: #f7ece6;
-    user-select: none;
-}
-
-.btndirect {
-    text-decoration: none;
-}
-
 .error {
     color: #e93e20;
     user-select: none;
