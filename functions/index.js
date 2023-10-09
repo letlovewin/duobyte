@@ -60,28 +60,31 @@ function validateUserName(text) {
 }
 
 exports.validateUserData = functions.https.onRequest((req, res) => {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-    });
-    logger.info(req.body);
-    const cur_data = req.body;
-    if (validateEmail(cur_data.email) == true) {
-        let parsed_email = cur_data.email.replace(/[^a-zA-Z0-9]/g, '');
-        const emailRef = db.ref('users/' + parsed_email + '/email');
-        emailRef.on('value', (snapshot) => {
-            const pwRef = db.ref('users/' + parsed_email + '/password');
-            pwRef.on('value', (snapshot2) => {
-                if ((snapshot.val() == null || snapshot2.val() == null) || (snapshot2.val() != cur_data.password)) {
-                    res.send("IEOP")
-                } else if (snapshot2.val() == $("#password").val()) {
-                    res.send("EPS");
-                }
+    cors(req,res,()=>{
+        res.set({
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+        });
+        logger.info(req.body);
+        const cur_data = req.body;
+        if (validateEmail(cur_data.email) == true) {
+            let parsed_email = cur_data.email.replace(/[^a-zA-Z0-9]/g, '');
+            const emailRef = db.ref('users/' + parsed_email + '/email');
+            emailRef.on('value', (snapshot) => {
+                const pwRef = db.ref('users/' + parsed_email + '/password');
+                pwRef.on('value', (snapshot2) => {
+                    if ((snapshot.val() == null || snapshot2.val() == null) || (snapshot2.val() != cur_data.password)) {
+                        res.send("IEOP")
+                    } else if (snapshot2.val() == $("#password").val()) {
+                        res.send("EPS");
+                    }
+                })
             })
-        })
-    } else {
-        res.send("IVE")
-    }
+        } else {
+            res.send("IVE")
+        }
+    })
+    
 })
 
 exports.writeUserData = functions.https.onRequest((req, res) => {

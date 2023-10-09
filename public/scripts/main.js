@@ -1,7 +1,5 @@
 /*
-if($("#email-error").length==0){
-        $("#main").append(`<p id="email-error" class="error">Please enter a valid email.</p>`);
-      }
+
 
   if($("#email-error").length==0){
             $("#main").append(`<p id="email-error" class="error">Please enter a valid email.</p>`);
@@ -30,7 +28,15 @@ $("#signup-btn").on("click", function (e) {
     }
   })
   .then(res => res.text())
-  .then(true_response => console.log(true_response))
+  .then(true_response => {
+    if(true_response=="EAE"&&$("#email-exist-error").length==0){
+      $("#main").append(`<p id="email-exist-error" class="error">This email is already in use. <a href="signin.html">Sign in</a>?</p>`);
+    } else if(true_response=="IE"&&$("#email-error").length==0){
+      $("#main").append(`<p id="email-error" class="error">Please enter a valid email.</p>`);
+    } else if(true_response=="IU"&&$("#username-error").length==0){
+      $("#main").append(`<p id="username-error" class="error">Please enter a valid username.</p>`);
+    }
+  })
 })
 
 $("#signin-btn").on("click", function (e) {
@@ -48,5 +54,9 @@ $("#signin-btn").on("click", function (e) {
     }
   })
   .then(res => res.text())
-  .then(true_response => console.log(true_response))
+  .then(true_response => {
+    if(true_response=="IEOP"&&$("#email-error-dne").length==0){
+      $("#main").append(`<p id="email-error-dne" class="error">Invalid email or password.</p>`);
+    }
+  })
 })
