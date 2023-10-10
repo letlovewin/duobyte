@@ -22,6 +22,10 @@ h3 {
     user-select: none;
 }
 
+h6 {
+    user-select: none;
+}
+
 .error {
     color: #e93e20;
     user-select: none;
@@ -36,4 +40,10 @@ h3 {
 .v-enter-from,
 .v-leave-to {
   opacity: 0;
+}
+
+.pfp-thumb {
+    object-fit: cover;
+    width: 230px;
+    height: 230px;
 }
