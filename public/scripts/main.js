@@ -32,8 +32,8 @@ function validateUserName(text) {
 
 import { signInWithEmailAndPassword, connectAuthEmulator, getAuth, AuthErrorCodes, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js';
-import { getStorage } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js';
-import { ref, h } from 'https://unpkg.com/vue@3/dist/vue.global.js';
+import { getStorage } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js';
+import { ref, h,createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
 
 
 const firebaseConfig = {
@@ -54,7 +54,7 @@ connectAuthEmulator(auth, "http://localhost:9099");
 
 const storage = getStorage(firebaseApp);
 
-let currentError = ref("");
+let currentError = "";
 let welcomeMessage = ref("");
 
 const loginEmailPassword = async () => {
@@ -69,13 +69,16 @@ const loginEmailPassword = async () => {
     catch (error) {
       console.log(error.code)
       if (error.code == AuthErrorCodes.INVALID_PASSWORD || error.code == AuthErrorCodes.INVALID_EMAIL) {
-        currentError.value = "Invalid email or password.";
+        currentError = "Invalid email or password.";
+        document.getElementById('current-error-label').innerHTML = currentError;
       } else if(error.code==AuthErrorCodes.USER_NOT_FOUND) {
-        currentError.value = `This email doesn't exist. <a href="signUp.html">Create a new account</a>?`;
+        currentError = `This email doesn't exist. <a href="signUp.html">Create a new account</a>?`;
+        document.getElementById('current-error-label').innerHTML = currentError;
       }
     }
   } else {
-    currentError.value = "Please enter a valid email.";
+    currentError = "Please enter a valid email.";
+    document.getElementById('current-error-label').innerHTML = currentError;
   }
 }
 
@@ -96,7 +99,8 @@ const createAccount = async () => {
       catch (error) {
         console.log(error.code)
         if (error.code == AuthErrorCodes.EMAIL_EXISTS) {
-          currentError.value = "This email already exists.";
+          currentError = "This email already exists.";
+          document.getElementById('current-error-label').innerHTML = currentError;
         } else if(error.code == AuthErrorCodes.UID_ALREADY_EXISTS) {
           // do nothing so far
         }
@@ -109,10 +113,7 @@ const createAccount = async () => {
 const monitorAuthStateAndRedirect = async () => { //Don't want to let a signed in user see the sign-in or create account page.
   onAuthStateChanged(auth, user => {
     if (user) {
-      //console.log(user);
       window.location.replace("dashboard.html")
-    } else {
-      console.log("User isn't logged in!")
     }
   })
 }
@@ -137,7 +138,7 @@ const monitorAuthStateAndOnboard = async () => {
                   },
                   template: card_body,
               })
-              //onboardingApp.mount("#main")
+              onboardingApp.mount("#main")
           } else {
               welcomeMessage.value = `Hi, ${user.displayName}!`;
           }
@@ -169,4 +170,23 @@ function signOut(e) {
   })
 }
 
-$("#footer").load("templates/footer.html")
+switch(window.location.pathname) {
+  case "/public/signin.html":
+    monitorAuthStateAndRedirect();
+    document.getElementById("btn-signin").addEventListener("click",signIn);
+    break;
+  case "/public/signup.html":
+    monitorAuthStateAndRedirect();
+    document.getElementById("btn-signup").addEventListener("click",signIn);
+    break;
+  case "/public/dashboard.html":
+    monitorAuthStateAndOnboard();
+    break;
+}
+
+const client = new XMLHttpRequest();
+client.open('GET', './templates/footer.html');
+client.onreadystatechange = function() {
+  document.getElementById("footer").innerHTML = client.responseText;
+}
+client.send();
