@@ -28,6 +28,7 @@ import {
     onAuthStateChanged,
     updateProfile
 } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js';
+import { getStorage } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js';
 
 
 
@@ -39,18 +40,20 @@ const firebaseConfig = {
     storageBucket: "duobyte-471b8.appspot.com",
     messagingSenderId: "739411745813",
     appId: "1:739411745813:web:274708422593bfc8dd421c",
-    measurementId: "G-WV6LTNLTRB"
+    measurementId: "G-WV6LTNLTRB",
+    
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
 
 const auth = getAuth(firebaseApp)
-//connectAuthEmulator(auth, "http://localhost:9099");
+connectAuthEmulator(auth, "http://localhost:9099");
 
 const monitorAuthState = async () => {
     onAuthStateChanged(auth, user => {
         if (user) {
             //console.log(user);
+            const storage = getStorage(firebaseApp);
             if (user.displayName == null) {
                 const onboardingApp = createApp({
                     data() {
@@ -106,7 +109,7 @@ const monitorAuthState = async () => {
                         }
                     }
                 })
-                onboardingApp.mount("#main")
+                //onboardingApp.mount("#main")
             } else {
                 $("#welcome-message").text(`Hi, ${user.displayName}!`)
             }
@@ -119,13 +122,13 @@ const monitorAuthState = async () => {
 $("#footer").load("templates/footer.html");
 
 $("#signout-btn").on("click", function (e) {
-    signOut(auth).then(() => {
-        window.location.replace("index.html")
+    signOut(auth).then(()=>{
+      window.location.replace("index.html")
     })
-        .catch((error) => {
-            console.log(error.code);
-        })
-})
+    .catch((error)=>{
+      console.log(error.code);
+    })
+  })
 
 monitorAuthState();
 

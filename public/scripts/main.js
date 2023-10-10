@@ -25,7 +25,7 @@ function validateUserName(text) {
   }
 }
 
-import { AuthErrorCodes, createUserWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js';
+import { AuthErrorCodes, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js';
 import {
   getAuth,
@@ -48,14 +48,12 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 
 const auth = getAuth(firebaseApp)
-//connectAuthEmulator(auth, "http://localhost:9099");
-
-
+connectAuthEmulator(auth, "http://localhost:9099");
 
 const loginEmailPassword = async () => {
   const loginEmail = $("#email").val();
   const loginPassword = $("#password").val();
-
+  const loginUserName = $("#username").val();
   if (validateEmail(loginEmail) == true) {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
@@ -80,14 +78,13 @@ const loginEmailPassword = async () => {
 const createAccount = async () => {
   const loginEmail = $("#email").val();
   const loginPassword = $("#password").val();
+  const loginUserName = $("#username").val();
   if (validateEmail(loginEmail) == true) {
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, loginEmail, loginPassword);
         console.log(userCredential.user);
         onAuthStateChanged(auth,(user)=>{
-          user.updateProfile({
-            displayName: `${loginUserName}`
-          })
+          updateProfile(user,{displayName:`${loginUserName}`});
         })
       }
       catch (error) {
@@ -121,7 +118,7 @@ $("#footer").load("templates/footer.html")
 $("#signup-btn").on("click", function (e) {
   e.preventDefault();
   createAccount()
-    //.then(monitorAuthState());
+    .then(monitorAuthState());
 })
 
 $("#signin-btn").on("click", function (e) {
@@ -130,11 +127,3 @@ $("#signin-btn").on("click", function (e) {
     .then(monitorAuthState());
 })
 
-$("#signout-btn").on("click", function (e) {
-  signOut(auth).then(()=>{
-    window.location.replace("index.html")
-  })
-  .catch((error)=>{
-    console.log(error.code);
-  })
-})
