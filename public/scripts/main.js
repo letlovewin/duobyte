@@ -1,3 +1,18 @@
+/*photoSelect() {
+                          document.getElementById("pfp-input-hidden").click();
+                          let file = document.getElementById("pfp-input-hidden").files[0];
+                          const reader = new FileReader();
+                          reader.onload = function(e) {
+                              let image = document.getElementById("pfp-preview-img");
+                              image.src = e.target.result;
+                          }
+                          console.log(reader.readAsDataURL(file))
+                      }*/
+
+/*
+  This file interacts with our Firebase backend and makes everything run smoothly.
+*/
+
 function validateEmail(text) {
   var validRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
   if (text.match(validRegex)) {
@@ -18,7 +33,7 @@ function validateUserName(text) {
 import { signInWithEmailAndPassword, connectAuthEmulator, getAuth, AuthErrorCodes, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js';
 import { getStorage } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js';
-import { ref } from 'https://unpkg.com/vue@3/dist/vue.global.js';
+import { ref, h } from 'https://unpkg.com/vue@3/dist/vue.global.js';
 
 
 const firebaseConfig = {
@@ -55,6 +70,8 @@ const loginEmailPassword = async () => {
       console.log(error.code)
       if (error.code == AuthErrorCodes.INVALID_PASSWORD || error.code == AuthErrorCodes.INVALID_EMAIL) {
         currentError.value = "Invalid email or password.";
+      } else if(error.code==AuthErrorCodes.USER_NOT_FOUND) {
+        currentError.value = `This email doesn't exist. <a href="signUp.html">Create a new account</a>?`;
       }
     }
   } else {
@@ -80,6 +97,8 @@ const createAccount = async () => {
         console.log(error.code)
         if (error.code == AuthErrorCodes.EMAIL_EXISTS) {
           currentError.value = "This email already exists.";
+        } else if(error.code == AuthErrorCodes.UID_ALREADY_EXISTS) {
+          // do nothing so far
         }
       }
   } else {
@@ -101,8 +120,14 @@ const monitorAuthStateAndRedirect = async () => { //Don't want to let a signed i
 const monitorAuthStateAndOnboard = async () => {
   onAuthStateChanged(auth, user => {
       if (user) {
-          //console.log(user);
           const storage = getStorage(firebaseApp);
+          const welcome_message = h('h6',`Welcome to duoByte, ${user.displayName}.`,{class:"text-center"});
+          const info_caption = h('')
+          const card_body = h('div',{class:"card-body"},[
+            welcome_message,
+            h('p',`We're just gonna need a few things from you.`,{class:"text-center"})
+          ]);
+          const card_node = h('div',{style:"width:14rem;height:15rem;",class:"card position-absolute top-50 start-50 translate-middle"},[card_body]);
           if (user.displayName == null) {
               const onboardingApp = createApp({
                   data() {
@@ -110,53 +135,7 @@ const monitorAuthStateAndOnboard = async () => {
                           pfp_url: '',
                       }
                   },
-                  /*
-<div id="image-input-group">
-                      <img src="" class="pfp-thumb img-thumbnail " id="pfp-preview-img">
-                      <button @click="photoSelect" type="button" class="btn btn-primary rounded-pill m-1"
-                        id="profile-photo-select-btn">Select a profile photo</button>
-                    </div>
-                  */
-                  template: `
-                  <div class="card position-absolute top-50 start-50 translate-middle" style="width:14rem;height:15rem;">
-                  <input type="file" accept="image/*" style="display:none" id="pfp-input-hidden">
-                  <div class="card-body">
-                    <h6 class="text-center">Welcome to duoByte.</h6>
-                    <p class="text-center">We're just gonna need a few things from you.</p>
-                    <div class="input-group position-absolute top-50 start-50 translate-middle p-2">
-                      <input type="text" class="form-control" placeholder="Username" aria-label="Username"
-                        aria-describedby="button-addon2" id="username-input">
-                      <button @click="usernameOnBoard" class="btn btn-outline-primary" type="button" id="button-addon2"><svg
-                          xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                          class="bi bi-arrow-right-circle" viewBox="0 0 16 16">
-                          <path fill-rule="evenodd"
-                            d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8zm15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z" />
-                        </svg></button>
-                    </div>
-                  </div>
-                </div>
-                `,
-                  methods: {
-                      /*photoSelect() {
-                          document.getElementById("pfp-input-hidden").click();
-                          let file = document.getElementById("pfp-input-hidden").files[0];
-                          const reader = new FileReader();
-                          reader.onload = function(e) {
-                              let image = document.getElementById("pfp-preview-img");
-                              image.src = e.target.result;
-                          }
-                          console.log(reader.readAsDataURL(file))
-                      }*/
-                      usernameOnBoard() {
-                          updateProfile(auth.currentUser,{
-                              displayName: `${document.getElementById("username-input").value}`
-                          }).then(()=>{
-                              console.log("Success")
-                          }).catch((error)=>{
-                              console.log(error.code);
-                          })
-                      }
-                  }
+                  template: card_body,
               })
               //onboardingApp.mount("#main")
           } else {

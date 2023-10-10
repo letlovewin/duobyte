@@ -27,7 +27,7 @@
         </div>
       </div>
       <button type="button" class="btn btn-primary rounded-pill mt-1" @click="signIn">Sign in</button>
-      <p class="error">{{ currentError }}</p>
+      <p class="error"><span v-html="currentError"></span></p>
     </div>
     <div class="border-top fixed-bottom mt-5 " id="footer"></div>
     <script type="module" src="scripts/main.js"></script>

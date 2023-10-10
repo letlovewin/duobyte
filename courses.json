@@ -1,0 +1,10 @@
+{
+    "courses" : {
+        "python" : {
+            "title" : "Programming in Python"
+        },
+        "javascript" : {
+            "title" : "Programming in Javascript"
+        }
+    }
+}
