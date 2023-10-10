@@ -1,12 +1,4 @@
-/*
-  if($("#email-error").length==0){
-            $("#main").append(`<p id="email-error" class="error">Please enter a valid email.</p>`);
-        }
-
-    if($("#email-error-dne").length==0){
-                $("#main").append(`<p id="email-error-dne" class="error">Invalid email or password.</p>`);
-            }
-*/
+const {createApp,ref}=Vue;
 
 function validateEmail(text) {
     var validRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
@@ -25,14 +17,18 @@ function validateUserName(text) {
     }
 }
 
-import { AuthErrorCodes, createUserWithEmailAndPassword, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js';
 import {
     getAuth,
     connectAuthEmulator,
     signInWithEmailAndPassword,
-    signOut
+    signOut,
+    AuthErrorCodes,
+    createUserWithEmailAndPassword,
+    onAuthStateChanged
 } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js';
+
+
 
 const firebaseConfig = {
     apiKey: "AIzaSyAXzjL21HzpSMWhTuHUrjKV-NcY8qjbnuU",
@@ -50,22 +46,25 @@ const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp)
 //connectAuthEmulator(auth, "http://localhost:9099");
 
-const monitorAuthState = async () => {
+const monitorAuthState = async () =>  {
     onAuthStateChanged(auth, user => {
         if (user) {
             //console.log(user);
-            $("#welcome-message").text(`Hi, ${user.displayName}!`)
+            if(user.displayName==null){
+                const onloadingApp = createApp({
+                    template:`<div class="container"><p>hello</p></div>`
+                })
+                onloadingApp.mount("#main")
+            } else {
+                $("#welcome-message").text(`Hi, ${user.displayName}!`)
+            }
         } else {
-            console.log("User isn't logged in!")
+            window.location.replace("index.html")
         }
     })
 }
 
-
-
-$("#footer").load("templates/footer.html")
-monitorAuthState();
-
+$("#footer").load("templates/footer.html");
 
 $("#signout-btn").on("click", function (e) {
     signOut(auth).then(() => {
@@ -75,3 +74,8 @@ $("#signout-btn").on("click", function (e) {
             console.log(error.code);
         })
 })
+
+
+
+monitorAuthState();
+

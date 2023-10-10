@@ -2,8 +2,8 @@
     background-image: radial-gradient(#838383 10%, transparent 10%),
           radial-gradient(#838383 10%, transparent 10%);
     background-color: #fff;
-    background-position: 0 0, 15px 15px;
-    background-size: 15px 15px;
+    background-position: 0 0, 10px 10px;
+    background-size: 10px 10px;
 }
 
 p {
@@ -26,4 +26,14 @@ h3 {
     color: #e93e20;
     user-select: none;
     margin-top: 5px;
+}
+
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
 }

@@ -59,6 +59,7 @@ const loginEmailPassword = async () => {
   if (validateEmail(loginEmail) == true) {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+
       console.log(userCredential.user);
     }
     catch (error) {
@@ -78,10 +79,8 @@ const loginEmailPassword = async () => {
 
 const createAccount = async () => {
   const loginEmail = $("#email").val();
-  const loginUserName = $("#username").val();
   const loginPassword = $("#password").val();
   if (validateEmail(loginEmail) == true) {
-    if (validateUserName(loginUserName) == true) {
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, loginEmail, loginPassword);
         console.log(userCredential.user);
@@ -99,12 +98,6 @@ const createAccount = async () => {
           }
         }
       }
-    } else {
-      if ($("#user-error").length == 0) {
-        $("#main").append(`<p id="user-error" class="error">Please enter a valid username. Alphanumeric characters only, no spaces.</p>`);
-      }
-    }
-
   } else {
     if ($("#email-error").length == 0) {
       $("#main").append(`<p id="email-error" class="error">Please enter a valid email.</p>`);
@@ -123,14 +116,12 @@ const monitorAuthState = async () => {
   })
 }
 
-
-
 $("#footer").load("templates/footer.html")
 
 $("#signup-btn").on("click", function (e) {
   e.preventDefault();
   createAccount()
-    .then(monitorAuthState());
+    //.then(monitorAuthState());
 })
 
 $("#signin-btn").on("click", function (e) {
