@@ -13,6 +13,7 @@
   This file interacts with our Firebase backend and makes everything run smoothly.
 */
 
+
 function validateEmail(text) {
   var validRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
   if (text.match(validRegex)) {
@@ -32,7 +33,7 @@ function validateUserName(text) {
 
 import { signInWithEmailAndPassword, connectAuthEmulator, getAuth, AuthErrorCodes, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js';
-import { getStorage } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js';
+import { getStorage, connectStorageEmulator } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAXzjL21HzpSMWhTuHUrjKV-NcY8qjbnuU",
@@ -46,11 +47,10 @@ const firebaseConfig = {
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
-
-const auth = getAuth(firebaseApp);
-//connectAuthEmulator(auth, "http://localhost:9099");
-
 const storage = getStorage(firebaseApp);
+const auth = getAuth(firebaseApp);
+connectAuthEmulator(auth, "http://localhost:9099");
+connectStorageEmulator(storage, "127.0.0.1", 9199);
 
 let currentError = "";
 
@@ -65,10 +65,10 @@ const loginEmailPassword = async () => {
     }
     catch (error) {
       console.log(error.code)
-      if (error.code == AuthErrorCodes.INVALID_PASSWORD || error.code == AuthErrorCodes.INVALID_EMAIL) {
+      if (error.code == "auth/invalid-login-credentials") {
         currentError = "Invalid email or password.";
         document.getElementById('current-error-label').innerHTML = currentError;
-      } else if(error.code==AuthErrorCodes.USER_NOT_FOUND) {
+      } else if (error.code == "auth/user-not-found") {
         currentError = `This email doesn't exist. <a href="signUp.html">Create a new account</a>?`;
         document.getElementById('current-error-label').innerHTML = currentError;
       }
@@ -86,44 +86,57 @@ const createAccount = async () => {
   const loginUserName = document.getElementById("username").value;
 
   if (validateEmail(loginEmail) == true) {
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, loginEmail, loginPassword);
-        console.log(userCredential.user);
-        onAuthStateChanged(auth,(user)=>{
-          updateProfile(user,{displayName:`${loginUserName}`});
-        })
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, loginEmail, loginPassword);
+      console.log(userCredential.user);
+      onAuthStateChanged(auth, (user) => {
+        updateProfile(user, { displayName: `${loginUserName}` });
+      })
+    }
+    catch (error) {
+      console.log(error.code)
+      if (error.code == "auth/email-already-in-use") {
+        currentError = "This email already exists.";
+        document.getElementById('current-error-label').innerHTML = currentError;
+      } else if (error.code == "auth/uid-already-exists") {
+        // do nothing so far
       }
-      catch (error) {
-        console.log(error.code)
-        if (error.code == AuthErrorCodes.EMAIL_EXISTS) {
-          currentError = "This email already exists.";
-          document.getElementById('current-error-label').innerHTML = currentError;
-        } else if(error.code == AuthErrorCodes.UID_ALREADY_EXISTS) {
-          // do nothing so far
-        }
-      }
+    }
   } else {
-    currentError.value = "Please enter a valid email.";
+    currentError = "Please enter a valid email.";
   }
 }
 
 const monitorAuthStateAndRedirect = async () => { //Don't want to let a signed in user see the sign-in or create account page.
   onAuthStateChanged(auth, user => {
     if (user) {
+
       window.location.replace("dashboard.html")
     }
   })
 }
 
 const monitorAuthStateAndOnboard = async () => {
+  console.log(`hello ${window.location.pathname}`);
   onAuthStateChanged(auth, user => {
-      if (user) {
-        
-      } else {
-          window.location.replace("index.html")
-      }
+    if (user) {
+      const userFolderRef = ref(storage,`users/${user.uid}`)
+        .then(() => {
+          window.location.replace("dashboard.html")
+        })
+        .catch((error) => {
+          if (error == "storage/object-not-found") {
+            //Trigger onboarding process
+            console.log("Hello");
+          }
+        })
+    } else {
+      //Kick user back to signin
+      window.location.replace("signin.html")
+    }
   })
 }
+
 
 function signUp(e) {
   e.preventDefault();
@@ -139,31 +152,55 @@ function signIn(e) {
 
 function signOut(e) {
   e.preventDefault();
-  signOut(auth).then(()=>{
+  signOut(auth).then(() => {
     window.location.replace("signin.html")
   })
-  .catch((error)=>{
-    console.log(error.code);
-  })
+    .catch((error) => {
+      console.log(error.code);
+    })
 }
 
-switch(window.location.pathname) {
-  case "/public/signin.html":
+
+
+switch (window.location.pathname) {
+  case "/signin":
     monitorAuthStateAndRedirect();
-    document.getElementById("btn-signin").addEventListener("click",signIn);
+    document.getElementById("btn-signin").addEventListener("click", signIn);
     break;
-  case "/public/signup.html":
+  case "/signup":
     monitorAuthStateAndRedirect();
-    document.getElementById("btn-signup").addEventListener("click",signUp);
+    document.getElementById("btn-signup").addEventListener("click", signUp);
     break;
-  case "/public/dashboard.html":
+  case "/onboarding":
     monitorAuthStateAndOnboard();
+    break;
+  case "/dashboard":
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        const userFolderRef = ref(storage,`users/${user.uid}`)
+          .then(() => {
+            document.getElementById("welcome-message-label").innerHTML=`Welcome, ${user}.`
+          })
+          .catch((error) => {
+            console.log(error.code)
+            if (error.code == "storage/object-not-found") {
+              //Trigger onboarding process
+              window.location.replace("onboarding.html")
+            }
+          })
+      } else {
+        //Kick user back to signin
+        window.location.replace("signin.html")
+      }
+    });
+    
+    document.getElementById("btn-signout").addEventListener("click",signOut);
     break;
 }
 
 const client = new XMLHttpRequest();
 client.open('GET', './templates/footer.html');
-client.onreadystatechange = function() {
+client.onreadystatechange = function () {
   document.getElementById("footer").innerHTML = client.responseText;
 }
 client.send();
