@@ -33,8 +33,6 @@ function validateUserName(text) {
 import { signInWithEmailAndPassword, connectAuthEmulator, getAuth, AuthErrorCodes, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js';
 import { getStorage } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js';
-import { ref, h,createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
-
 
 const firebaseConfig = {
   apiKey: "AIzaSyAXzjL21HzpSMWhTuHUrjKV-NcY8qjbnuU",
@@ -50,12 +48,11 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 
 const auth = getAuth(firebaseApp);
-connectAuthEmulator(auth, "http://localhost:9099");
+//connectAuthEmulator(auth, "http://localhost:9099");
 
 const storage = getStorage(firebaseApp);
 
 let currentError = "";
-let welcomeMessage = ref("");
 
 const loginEmailPassword = async () => {
   const loginEmail = document.getElementById("email").value;
@@ -121,27 +118,7 @@ const monitorAuthStateAndRedirect = async () => { //Don't want to let a signed i
 const monitorAuthStateAndOnboard = async () => {
   onAuthStateChanged(auth, user => {
       if (user) {
-          const storage = getStorage(firebaseApp);
-          const welcome_message = h('h6',`Welcome to duoByte, ${user.displayName}.`,{class:"text-center"});
-          const info_caption = h('')
-          const card_body = h('div',{class:"card-body"},[
-            welcome_message,
-            h('p',`We're just gonna need a few things from you.`,{class:"text-center"})
-          ]);
-          const card_node = h('div',{style:"width:14rem;height:15rem;",class:"card position-absolute top-50 start-50 translate-middle"},[card_body]);
-          if (user.displayName == null) {
-              const onboardingApp = createApp({
-                  data() {
-                      return {
-                          pfp_url: '',
-                      }
-                  },
-                  template: card_body,
-              })
-              onboardingApp.mount("#main")
-          } else {
-              welcomeMessage.value = `Hi, ${user.displayName}!`;
-          }
+        
       } else {
           window.location.replace("index.html")
       }
@@ -177,7 +154,7 @@ switch(window.location.pathname) {
     break;
   case "/public/signup.html":
     monitorAuthStateAndRedirect();
-    document.getElementById("btn-signup").addEventListener("click",signIn);
+    document.getElementById("btn-signup").addEventListener("click",signUp);
     break;
   case "/public/dashboard.html":
     monitorAuthStateAndOnboard();
