@@ -118,12 +118,19 @@ const monitorAuthStateAndRedirect = async () => { //Don't want to let a signed i
 }
 
 const monitorAuthStateAndOnboard = async () => {
-  console.log(`hello ${window.location.pathname}`);
+  //console.log(`hello ${window.location.pathname}`);
   onAuthStateChanged(auth, user => {
     if (user) {
-      const userFolderRef = ref(storage,`users/${user.uid}`);
-      
-        
+      const userFolderRef = ref(storage,`users/${user.uid}`)
+      let userFolderName = null;
+      try {
+
+      }
+      catch(error) {
+        if(error.code=="storage/object-not-found"){
+          window.location.replace("onboarding.html");
+        }
+      }
     } else {
       //Kick user back to signin
       window.location.replace("signin.html")
