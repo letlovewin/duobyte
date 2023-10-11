@@ -33,7 +33,7 @@ function validateUserName(text) {
 
 import { signInWithEmailAndPassword, connectAuthEmulator, getAuth, AuthErrorCodes, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js';
-import { getStorage, connectStorageEmulator } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js';
+import { getStorage, connectStorageEmulator, ref } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAXzjL21HzpSMWhTuHUrjKV-NcY8qjbnuU",
@@ -48,9 +48,10 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 const storage = getStorage(firebaseApp);
+const storageRef = ref(storage);
 const auth = getAuth(firebaseApp);
 connectAuthEmulator(auth, "http://localhost:9099");
-connectStorageEmulator(storage, "127.0.0.1", 9199);
+connectStorageEmulator(storage, "127.0.0.1:9199");
 
 let currentError = "";
 
@@ -120,22 +121,16 @@ const monitorAuthStateAndOnboard = async () => {
   console.log(`hello ${window.location.pathname}`);
   onAuthStateChanged(auth, user => {
     if (user) {
-      const userFolderRef = ref(storage,`users/${user.uid}`)
-        .then(() => {
-          window.location.replace("dashboard.html")
-        })
-        .catch((error) => {
-          if (error == "storage/object-not-found") {
-            //Trigger onboarding process
-            console.log("Hello");
-          }
-        })
+      const userFolderRef = ref(storage,`users/${user.uid}`);
+      
+        
     } else {
       //Kick user back to signin
       window.location.replace("signin.html")
     }
   })
 }
+
 
 
 function signUp(e) {
@@ -175,25 +170,7 @@ switch (window.location.pathname) {
     monitorAuthStateAndOnboard();
     break;
   case "/dashboard":
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        const userFolderRef = ref(storage,`users/${user.uid}`)
-          .then(() => {
-            document.getElementById("welcome-message-label").innerHTML=`Welcome, ${user}.`
-          })
-          .catch((error) => {
-            console.log(error.code)
-            if (error.code == "storage/object-not-found") {
-              //Trigger onboarding process
-              window.location.replace("onboarding.html")
-            }
-          })
-      } else {
-        //Kick user back to signin
-        window.location.replace("signin.html")
-      }
-    });
-    
+    monitorAuthStateAndOnboard();
     document.getElementById("btn-signout").addEventListener("click",signOut);
     break;
 }
