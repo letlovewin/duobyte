@@ -146,7 +146,7 @@ const monitorAuthStateAndRedirect = async () => { //Don't want to let a signed i
       })
         .then(res => res.text())
         .then(tr => {
-          if (tr == "N" && window.location.pathname != pathname_onboarding) {
+          if (tr == "user-doesnt-exist" && window.location.pathname != pathname_onboarding) {
             window.location.replace("onboarding.html")
           } else {
             window.location.replace("dashboard.html")
@@ -180,7 +180,7 @@ const monitorAuthStateAndOnboard = async () => {
         .then(tr => {
           if (tr == "user-doesnt-exist" && window.location.pathname != pathname_onboarding) {
             window.location.replace("onboarding.html")
-          } else {
+          } else if(tr == "user-doesnt-exist" && window.location.pathname == pathname_onboarding) {
             fetch("http://127.0.0.1:5001/duobyte-471b8/us-central1/returnCourseInformation", {
               method: "POST",
               body: data,
@@ -189,7 +189,34 @@ const monitorAuthStateAndOnboard = async () => {
               }
             })
               .then(res => res.text())
-              .then(tr=>console.log(tr));
+              .then(tr=>{
+                let tr_parsed = JSON.parse(tr);
+                for(let i=0;i<tr_parsed.length;i++){
+                  let btn_select = document.createElement("button",{class:"btn btn-primary"});
+                  btn_select.innerHTML = tr_parsed[i]
+                  btn_select.addEventListener("click",function(e){
+                    fetch("http://127.0.0.1:5001/duobyte-471b8/us-central1/onboardUser", {
+                      method: "POST",
+                      body: JSON.stringify({
+                        uid: `${user.uid}`,
+                        first_course:`${tr_parsed[i]}`
+                      }),
+                      headers: {
+                        "Content-type": "application/json;charset=UTF-8"
+                      }
+                    })
+                    .then(res=>res.text())
+                    .then(tr=>{
+                      if(tr=="onboarding-successful"){
+                        monitorAuthStateAndOnboard();
+                      }
+                    })
+                  })
+                  document.getElementById("course-selection").appendChild(btn_select);
+                }
+              });
+          } else {
+            window.location.replace("dashboard.html")
           }
         });
 
