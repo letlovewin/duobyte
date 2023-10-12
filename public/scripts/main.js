@@ -13,10 +13,10 @@
   This file interacts with our Firebase backend and makes everything run smoothly.
 */
 
-let pathname_onboarding = "/onboarding";
-let pathname_dashboard = "/dashboard";
-let pathname_signup = "/signup";
-let pathname_signin = "/signin";
+let pathname_onboarding = "/public/onboarding.html";
+let pathname_dashboard = "/public/dashboard.html";
+let pathname_signup = "/public/signUp.html";
+let pathname_signin = "/public/signin.html";
 let pathname_index = "/";
 
 
@@ -57,8 +57,8 @@ const firebaseApp = initializeApp(firebaseConfig);
 const storage = getStorage(firebaseApp);
 const storageRef = ref(storage);
 const auth = getAuth(firebaseApp);
-//connectAuthEmulator(auth, "http://localhost:9099");
-//connectStorageEmulator(storage, "127.0.0.1:9199");
+connectAuthEmulator(auth, "http://localhost:9099");
+connectStorageEmulator(storage, "127.0.0.1:9199");
 
 let currentError = "";
 
@@ -118,7 +118,7 @@ const createAccount = async () => {
 }
 
 function checkIfFileExists(filePath) {
-  getDownloadURL(ref(storage,filePath))
+  getDownloadURL(ref(storage, filePath))
     .then(url => {
       return Promise.resolve(true);
     })
@@ -134,8 +134,30 @@ function checkIfFileExists(filePath) {
 const monitorAuthStateAndRedirect = async () => { //Don't want to let a signed in user see the sign-in or create account page.
   onAuthStateChanged(auth, user => {
     if (user) {
+      const data = JSON.stringify({
+        uid: `${user.uid}`,
+      });
+      fetch("https://us-central1-duobyte-471b8.cloudfunctions.net/checkIfUserOnboarded", {
+        method: "POST",
+        body: data,
+        headers: {
+          "Content-type": "application/json;charset=UTF-8"
+        }
+      })
+        .then(res => res.text())
+        .then(tr => {
+          if (tr == "N" && window.location.pathname != pathname_onboarding) {
+            window.location.replace("onboarding.html")
+          } else {
+            window.location.replace("dashboard.html")
+          }
+        });
 
-      window.location.replace("dashboard.html")
+
+    } else {
+      //Kick user back to signin
+      if (window.location.hostname == pathname_dashboard || window.location.hostname == pathname_onboarding || window.location.hostname == "learn")
+        window.location.replace("signin.html")
     }
   })
 }
@@ -147,21 +169,31 @@ const monitorAuthStateAndOnboard = async () => {
       const data = JSON.stringify({
         uid: `${user.uid}`,
       });
-      fetch("https://us-central1-duobyte-471b8.cloudfunctions.net/checkIfUserOnboarded",{
-        method:"POST",
-        body:data,
-        headers:{
+      fetch("https://us-central1-duobyte-471b8.cloudfunctions.net/checkIfUserOnboarded", {
+        method: "POST",
+        body: data,
+        headers: {
           "Content-type": "application/json;charset=UTF-8"
         }
       })
-      .then(res=>res.text())
-      .then(tr=>{
-        if(tr=="N"&&window.location.pathname!=pathname_onboarding){
-          window.location.replace("onboarding.html")
-        }
-      });
-      
-      
+        .then(res => res.text())
+        .then(tr => {
+          if (tr == "user-doesnt-exist" && window.location.pathname != pathname_onboarding) {
+            window.location.replace("onboarding.html")
+          } else {
+            fetch("http://127.0.0.1:5001/duobyte-471b8/us-central1/returnCourseInformation", {
+              method: "POST",
+              body: data,
+              headers: {
+                "Content-type": "application/json;charset=UTF-8"
+              }
+            })
+              .then(res => res.text())
+              .then(tr=>console.log(tr));
+          }
+        });
+
+
     } else {
       //Kick user back to signin
       window.location.replace("signin.html")
@@ -205,7 +237,7 @@ switch (window.location.pathname) {
     break;
   case pathname_dashboard:
     monitorAuthStateAndOnboard();
-    document.getElementById("btn-signout").addEventListener("click",signUserOut);
+    document.getElementById("btn-signout").addEventListener("click", signUserOut);
     break;
 }
 

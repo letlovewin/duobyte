@@ -33,7 +33,7 @@ const app = express();
 const firebaseConfig = {
     apiKey: "AIzaSyAXzjL21HzpSMWhTuHUrjKV-NcY8qjbnuU",
     authDomain: "duobyte-471b8.firebaseapp.com",
-    databaseURL: "https://duobyte-471b8-default-rtdb.firebaseio.com",
+    databaseURL: "http://127.0.0.1:9000/?ns=duobyte-471b8",
     projectId: "duobyte-471b8",
     storageBucket: "duobyte-471b8.appspot.com",
     messagingSenderId: "739411745813",
@@ -56,20 +56,63 @@ exports.checkIfUserOnboarded = functions.https.onRequest((req, res) => {
         const reference = db.ref('users/' + cur_data.uid);
         reference.on('value', (snapshot) => {
             if (snapshot.exists()) {
-                res.status(201).send("Y");
+                res.status(201).send("user-exists");
             } else {
-                res.status(201).send("N");
+                res.status(201).send("user-doesnt-exist");
+            }
+        })
+    })
+})
+
+exports.returnCourseInformation = functions.https.onRequest((req,res)=>{
+    cors(req,res,()=>{
+        res.set({
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+        });
+        //we have course data in courses/
+        const reference = db.ref('courses');
+        reference.on('value',(snapshot)=>{
+            if(snapshot.exists()){
+                res.status(201).json(snapshot.toJSON());
+            } else {
+                res.status(500).send("snapshot-doesnt-exist");
             }
         })
     })
 })
 
 exports.onboardUser = functions.https.onRequest((req,res)=>{
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-    });
-    logger.info(req.body);
-    const cur_data = req.body;
+    cors(req,res,()=>{
+        res.set({
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+        });
+        logger.info(req.body);
+        const cur_data = req.body;
+        const reference = db.ref('users/' + cur_data.uid);
+        reference.on('value', (snapshot) => {
+            if (snapshot.exists()) {
+                res.status(201).send("user-already-onboarded");
+            } else {
+                let uid = cur_data.uid;
+                let first_course = cur_data.first_course;
+                try {
+                    db.ref('users').set({
+                        uid: {
+                            courses: {first_course}
+                        }
+                    })
+                    .then(()=>{
+                        res.status(201).send("onboarding-successful")
+                    })
+                }
+                catch(error) {
+                    res.status(500).send(error.code);
+                }
+            }
+        })
+    })
+    
     
 })
