@@ -9,7 +9,7 @@
 
 const functions = require("firebase-functions");
 const { onRequest } = require("firebase-functions/v2/https");
-const { getAuth,createUserWithEmailAndPassword, connectAuthEmulator } = require("firebase/auth")
+//const { getAuth, createUserWithEmailAndPassword, connectAuthEmulator } = require("firebase/auth")
 const logger = require("firebase-functions/logger");
 
 // Create and deploy your first functions
@@ -23,10 +23,9 @@ const logger = require("firebase-functions/logger");
 const { initializeApp } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 const { getDatabase, ref, set, onValue } = require("firebase-admin/database");
-const bcrypt = require('bcrypt');
 
 const express = require('express');
-const cors = require('cors')({origin:true});
+const cors = require('cors')({ origin: true });
 const app = express();
 
 //http://127.0.0.1:9000/?ns=duobyte-471b8
@@ -34,7 +33,7 @@ const app = express();
 const firebaseConfig = {
     apiKey: "AIzaSyAXzjL21HzpSMWhTuHUrjKV-NcY8qjbnuU",
     authDomain: "duobyte-471b8.firebaseapp.com",
-    databaseURL: "http://127.0.0.1:9000/?ns=duobyte-471b8",
+    databaseURL: "https://duobyte-471b8-default-rtdb.firebaseio.com",
     projectId: "duobyte-471b8",
     storageBucket: "duobyte-471b8.appspot.com",
     messagingSenderId: "739411745813",
@@ -45,3 +44,32 @@ const firebaseConfig = {
 // Initialize Firebase
 const firebase_app = initializeApp(firebaseConfig);
 const db = getDatabase();
+
+exports.checkIfUserOnboarded = functions.https.onRequest((req, res) => {
+    cors(req,res,()=>{
+        res.set({
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+        });
+        logger.info(req.body);
+        const cur_data = req.body;
+        const reference = db.ref('users/' + cur_data.uid);
+        reference.on('value', (snapshot) => {
+            if (snapshot.exists()) {
+                res.status(201).send("Y");
+            } else {
+                res.status(201).send("N");
+            }
+        })
+    })
+})
+
+exports.onboardUser = functions.https.onRequest((req,res)=>{
+    res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+    });
+    logger.info(req.body);
+    const cur_data = req.body;
+    
+})
