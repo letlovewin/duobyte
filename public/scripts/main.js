@@ -38,7 +38,7 @@ function validateUserName(text) {
   }
 }
 
-import { signOut, signInWithEmailAndPassword, connectAuthEmulator, getAuth, AuthErrorCodes, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js';
+import { signOut, signInWithEmailAndPassword, connectAuthEmulator, getAuth, AuthErrorCodes, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js';
 import { getStorage, connectStorageEmulator, ref, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js';
 
@@ -180,7 +180,7 @@ const monitorAuthStateAndOnboard = async () => {
         .then(tr => {
           if (tr == "user-doesnt-exist" && window.location.pathname != pathname_onboarding) {
             window.location.replace("onboarding.html")
-          } else if(tr == "user-doesnt-exist" && window.location.pathname == pathname_onboarding) {
+          } else if (tr == "user-doesnt-exist" && window.location.pathname == pathname_onboarding) {
             fetch("http://127.0.0.1:5001/duobyte-471b8/us-central1/returnCourseInformation", {
               method: "POST",
               body: data,
@@ -189,28 +189,28 @@ const monitorAuthStateAndOnboard = async () => {
               }
             })
               .then(res => res.text())
-              .then(tr=>{
+              .then(tr => {
                 let tr_parsed = JSON.parse(tr);
-                for(let i=0;i<tr_parsed.length;i++){
-                  let btn_select = document.createElement("button",{class:"btn btn-primary"});
+                for (let i = 0; i < tr_parsed.length; i++) {
+                  let btn_select = document.createElement("button", { class: "btn btn-primary" });
                   btn_select.innerHTML = tr_parsed[i]
-                  btn_select.addEventListener("click",function(e){
+                  btn_select.addEventListener("click", function (e) {
                     fetch("http://127.0.0.1:5001/duobyte-471b8/us-central1/onboardUser", {
                       method: "POST",
                       body: JSON.stringify({
                         uid: `${user.uid}`,
-                        first_course:`${tr_parsed[i]}`
+                        first_course: `${tr_parsed[i]}`
                       }),
                       headers: {
                         "Content-type": "application/json;charset=UTF-8"
                       }
                     })
-                    .then(res=>res.text())
-                    .then(tr=>{
-                      if(tr=="onboarding-successful"){
-                        monitorAuthStateAndOnboard();
-                      }
-                    })
+                      .then(res => res.text())
+                      .then(tr => {
+                        if (tr == "onboarding-successful") {
+                          monitorAuthStateAndOnboard();
+                        }
+                      })
                   })
                   document.getElementById("course-selection").appendChild(btn_select);
                 }
@@ -219,8 +219,6 @@ const monitorAuthStateAndOnboard = async () => {
             window.location.replace("dashboard.html")
           }
         });
-
-
     } else {
       //Kick user back to signin
       window.location.replace("signin.html")
@@ -228,6 +226,22 @@ const monitorAuthStateAndOnboard = async () => {
   })
 }
 
+function forgotPassword(e) {
+  e.preventDefault();
+  if (validateEmail(document.getElementById("email").value) == true) {
+    sendPasswordResetEmail((auth, document.getElementById("email").value))
+      .then(() => {
+        //Password reset email sent.
+      })
+      .catch((error) => {
+        console.log(error.code);
+      })
+    ))
+  } else if(document.getElementById("email").value==""){
+    currentError = "Please enter a valid email.";
+    document.getElementById("current-error-label").innerHTML=currentError;
+  }
+}
 function signUp(e) {
   e.preventDefault();
   createAccount()
@@ -254,6 +268,7 @@ switch (window.location.pathname) {
   case pathname_signin:
     monitorAuthStateAndRedirect();
     document.getElementById("btn-signin").addEventListener("click", signIn);
+    document.getElementById("btn-forgotpass").addEventListener("click", forgotPassword);
     break;
   case pathname_signup:
     monitorAuthStateAndRedirect();
@@ -267,12 +282,3 @@ switch (window.location.pathname) {
     document.getElementById("btn-signout").addEventListener("click", signUserOut);
     break;
 }
-
-/*
-const client = new XMLHttpRequest();
-client.open('GET', './templates/footer.html');
-client.onreadystatechange = function () {
-  document.getElementById("footer").innerHTML = client.responseText;
-}
-client.send();
-*/
