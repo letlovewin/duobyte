@@ -57,11 +57,10 @@ const firebaseApp = initializeApp(firebaseConfig);
 const storage = getStorage(firebaseApp);
 const storageRef = ref(storage);
 const auth = getAuth(firebaseApp);
-connectAuthEmulator(auth, "http://localhost:9099");
-connectStorageEmulator(storage, "127.0.0.1:9199");
+//connectAuthEmulator(auth, "http://localhost:9099");
+//connectStorageEmulator(storage, "127.0.0.1:9199");
 
 let currentError = "";
-
 
 
 const loginEmailPassword = async () => {
@@ -116,21 +115,6 @@ const createAccount = async () => {
     currentError = "Please enter a valid email.";
   }
 }
-
-function checkIfFileExists(filePath) {
-  getDownloadURL(ref(storage, filePath))
-    .then(url => {
-      return Promise.resolve(true);
-    })
-    .catch(error => {
-      if (error.code === 'storage/object-not-found') {
-        return Promise.resolve(false);
-      } else {
-        return Promise.reject(error);
-      }
-    });
-}
-
 const monitorAuthStateAndRedirect = async () => { //Don't want to let a signed in user see the sign-in or create account page.
   onAuthStateChanged(auth, user => {
     if (user) {
@@ -146,18 +130,10 @@ const monitorAuthStateAndRedirect = async () => { //Don't want to let a signed i
       })
         .then(res => res.text())
         .then(tr => {
-          if (tr == "user-doesnt-exist" && window.location.pathname != pathname_onboarding) {
-            window.location.replace("onboarding.html")
-          } else {
-            window.location.replace("dashboard.html")
-          }
+          console.log(tr);
         });
 
 
-    } else {
-      //Kick user back to signin
-      if (window.location.hostname == pathname_dashboard || window.location.hostname == pathname_onboarding || window.location.hostname == "learn")
-        window.location.replace("signin.html")
     }
   })
 }
@@ -236,10 +212,10 @@ function forgotPassword(e) {
       .catch((error) => {
         console.log(error.code);
       })
-    ))
-  } else if(document.getElementById("email").value==""){
+
+  } else if (document.getElementById("email").value == "") {
     currentError = "Please enter a valid email.";
-    document.getElementById("current-error-label").innerHTML=currentError;
+    document.getElementById("current-error-label").innerHTML = currentError;
   }
 }
 function signUp(e) {
@@ -248,37 +224,32 @@ function signUp(e) {
     .then(monitorAuthStateAndRedirect());
 }
 
-function signIn(e) {
+onAuthStateChanged(auth, user => {
+  if (user) {
+    const data = JSON.stringify({
+      uid:user.uid
+    })
+    fetch("https://us-central1-duobyte-471b8.cloudfunctions.net/checkIfUserOnboarded", {
+      method: "POST",
+      body: data,
+      headers: {
+        "Content-type": "application/json;charset=UTF-8"
+      }
+    })
+      .then(res => res.text())
+      .then(tr => {
+        if (tr == "N") {
+          window.location.replace("onboarding.html");
+        } else {
+          window.location.replace("dashboard.html");
+        }
+      })
+  } else {
+  }
+})
+
+document.getElementById("btn-signin").addEventListener("click", function (e) {
   e.preventDefault();
   loginEmailPassword()
-    .then(monitorAuthStateAndRedirect());
-}
 
-function signUserOut(e) {
-  e.preventDefault();
-  signOut(auth).then(() => {
-    window.location.replace("signin.html")
-  })
-    .catch((error) => {
-      console.log(error.code);
-    })
-}
-
-switch (window.location.pathname) {
-  case pathname_signin:
-    monitorAuthStateAndRedirect();
-    document.getElementById("btn-signin").addEventListener("click", signIn);
-    document.getElementById("btn-forgotpass").addEventListener("click", forgotPassword);
-    break;
-  case pathname_signup:
-    monitorAuthStateAndRedirect();
-    document.getElementById("btn-signup").addEventListener("click", signUp);
-    break;
-  case pathname_onboarding:
-    monitorAuthStateAndOnboard();
-    break;
-  case pathname_dashboard:
-    monitorAuthStateAndOnboard();
-    document.getElementById("btn-signout").addEventListener("click", signUserOut);
-    break;
-}
+})
