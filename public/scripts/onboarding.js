@@ -14,10 +14,7 @@ const firebaseConfig = {
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
-const storage = getStorage(firebaseApp);
 const auth = getAuth(firebaseApp);
-
-let currentError = "";
 
 onAuthStateChanged(auth, user => {
     if (user) {
