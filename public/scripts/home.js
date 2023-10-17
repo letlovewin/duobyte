@@ -1,43 +1,3 @@
-/*photoSelect() {
-                          document.getElementById("pfp-input-hidden").click();
-                          let file = document.getElementById("pfp-input-hidden").files[0];
-                          const reader = new FileReader();
-                          reader.onload = function(e) {
-                              let image = document.getElementById("pfp-preview-img");
-                              image.src = e.target.result;
-                          }
-                          console.log(reader.readAsDataURL(file))
-                      }*/
-
-/*
-  This file interacts with our Firebase backend and makes everything run smoothly.
-*/
-
-let pathname_onboarding = "/public/onboarding.html";
-let pathname_dashboard = "/public/dashboard.html";
-let pathname_signup = "/public/signUp.html";
-let pathname_signin = "/public/signin.html";
-let pathname_index = "/";
-
-
-
-function validateEmail(text) {
-    var validRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-    if (text.match(validRegex)) {
-        return true;
-    } else {
-        return false;
-    }
-}
-function validateUserName(text) {
-    var validRegex = /^[a-zA-z0-9]+$/;
-    if (text.match(validRegex)) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
 import { signOut, signInWithEmailAndPassword, connectAuthEmulator, getAuth, AuthErrorCodes, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js';
 import { getStorage, connectStorageEmulator, ref, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-storage.js';
@@ -59,8 +19,6 @@ const storageRef = ref(storage);
 const auth = getAuth(firebaseApp);
 //connectAuthEmulator(auth, "http://localhost:9099");
 //connectStorageEmulator(storage, "127.0.0.1:9199");
-
-let currentError = "";
 
 const monitorAuthStateAndRedirect = async () => { //Don't want to let a signed in user see the sign-in or create account page.
     onAuthStateChanged(auth, user => {

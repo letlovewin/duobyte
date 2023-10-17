@@ -115,28 +115,6 @@ const createAccount = async () => {
     currentError = "Please enter a valid email.";
   }
 }
-const monitorAuthStateAndRedirect = async () => { //Don't want to let a signed in user see the sign-in or create account page.
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      const data = JSON.stringify({
-        uid: `${user.uid}`,
-      });
-      fetch("https://us-central1-duobyte-471b8.cloudfunctions.net/checkIfUserOnboarded", {
-        method: "POST",
-        body: data,
-        headers: {
-          "Content-type": "application/json;charset=UTF-8"
-        }
-      })
-        .then(res => res.text())
-        .then(tr => {
-          console.log(tr);
-        });
-
-
-    }
-  })
-}
 
 const monitorAuthStateAndOnboard = async () => {
   //console.log(`hello ${window.location.pathname}`);

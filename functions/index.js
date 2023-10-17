@@ -82,6 +82,18 @@ exports.returnCourseInformation = functions.https.onRequest((req,res)=>{
     })
 })
 
+exports.generateQuestion = functions.https.onRequest((req,res)=>{
+    cors(req,res,()=>{
+        res.set({
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+        });
+        logger.info(req.body);
+        const cur_data = req.body;
+        const reference = db.ref('questions/')
+    })
+})
+
 exports.onboardUser = functions.https.onRequest((req,res)=>{
     cors(req,res,()=>{
         res.set({

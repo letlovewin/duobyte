@@ -43,55 +43,34 @@ const createAccount = async () => {
     const loginUserName = document.getElementById("username").value;
 
     if (validateEmail(loginEmail) == true) {
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, loginEmail, loginPassword);
-            console.log(userCredential.user);
-            onAuthStateChanged(auth, (user) => {
-                updateProfile(user, { displayName: `${loginUserName}` });
-            })
-        }
-        catch (error) {
-            console.log(error.code)
-            if (error.code == "auth/email-already-in-use") {
-                currentError = "This email already exists.";
-                document.getElementById('current-error-label').innerHTML = currentError;
-            } else if (error.code == "auth/uid-already-exists") {
-                // do nothing so far
+        if(validateUserName(loginUserName)==true){
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, loginEmail, loginPassword);
+                console.log(userCredential.user);
+                onAuthStateChanged(auth, (user) => {
+                    updateProfile(user, { displayName: `${loginUserName}` });
+                })
             }
+            catch (error) {
+                console.log(error.code)
+                if (error.code == "auth/email-already-in-use") {
+                    currentError = "This email already exists.";
+                    document.getElementById('current-error-label').innerHTML = currentError;
+                } else if (error.code == "auth/uid-already-exists") {
+                    currentError = `Uh-oh! This is an issue with our database. Please notify us of an "auth/uid-already-exists" error.`;
+                    document.getElementById('current-error-label').innerHTML = currentError;
+                }
+            }
+        } else {
+            currentError = "Please enter a valid username.";
+            document.getElementById('current-error-label').innerHTML = currentError;
         }
+        
     } else {
         currentError = "Please enter a valid email.";
+        document.getElementById('current-error-label').innerHTML = currentError;
     }
 }
-
-const monitorAuthStateAndRedirect = async () => { //Don't want to let a signed in user see the sign-in or create account page.
-    onAuthStateChanged(auth, user => {
-        if (user) {
-            const data = JSON.stringify({
-                uid: `${user.uid}`,
-            });
-            fetch("https://us-central1-duobyte-471b8.cloudfunctions.net/checkIfUserOnboarded", {
-                method: "POST",
-                body: data,
-                headers: {
-                    "Content-type": "application/json;charset=UTF-8"
-                }
-            })
-                .then(res => res.text())
-                .then(tr => {
-                    if (tr == "N") {
-                        window.location.replace("onboarding.html")
-                    } else {
-                        window.location.replace("dashboard.html")
-                    }
-                });
-
-
-        } else {
-        }
-    })
-}
-
 
 onAuthStateChanged(auth, user => {
     if (user) {
@@ -105,7 +84,7 @@ onAuthStateChanged(auth, user => {
         })
             .then(res => res.text())
             .then(tr => {
-                if (tr == "user-doesnt-exist") {
+                if (tr == "N") {
                     window.location.replace("onboarding.html");
                 } else {
                     window.location.replace("dashboard.html");
@@ -117,8 +96,5 @@ onAuthStateChanged(auth, user => {
 
 document.getElementById("btn-signup").addEventListener("click", function (e) {
     e.preventDefault();
-    createAccount()
-        .then(
-            monitorAuthStateAndRedirect()
-        );
+    createAccount();
 })
