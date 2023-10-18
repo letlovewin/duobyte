@@ -8,22 +8,32 @@
 
 p {
     user-select: none;
+    font-family: 'Varela Round', sans-serif;
 }
 
 h1 {
     user-select: none;
+    font-family: 'Varela Round', sans-serif;
 }
 
 h2 {
     user-select: none;
+    font-family: 'Varela Round', sans-serif;
 }
 
 h3 {
     user-select: none;
+    font-family: 'Varela Round', sans-serif;
+}
+
+h5 {
+    user-select: none;
+    font-family: 'Varela Round', sans-serif;
 }
 
 h6 {
     user-select: none;
+    
 }
 
 .error {

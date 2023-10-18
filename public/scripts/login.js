@@ -1,26 +1,3 @@
-/*photoSelect() {
-                          document.getElementById("pfp-input-hidden").click();
-                          let file = document.getElementById("pfp-input-hidden").files[0];
-                          const reader = new FileReader();
-                          reader.onload = function(e) {
-                              let image = document.getElementById("pfp-preview-img");
-                              image.src = e.target.result;
-                          }
-                          console.log(reader.readAsDataURL(file))
-                      }*/
-
-/*
-  This file interacts with our Firebase backend and makes everything run smoothly.
-*/
-
-let pathname_onboarding = "/public/onboarding.html";
-let pathname_dashboard = "/public/dashboard.html";
-let pathname_signup = "/public/signUp.html";
-let pathname_signin = "/public/signin.html";
-let pathname_index = "/";
-
-
-
 function validateEmail(text) {
   var validRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
   if (text.match(validRegex)) {
@@ -216,7 +193,7 @@ onAuthStateChanged(auth, user => {
     })
       .then(res => res.text())
       .then(tr => {
-        if (tr == "N") {
+        if (tr.state == "user-doesnt-exist") {
           window.location.replace("onboarding.html");
         } else {
           window.location.replace("dashboard.html");

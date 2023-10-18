@@ -30,45 +30,52 @@ onAuthStateChanged(auth, user => {
         })
             .then(res => res.text())
             .then(tr => {
-                if (tr != "N") {
-                    window.location.replace("dashboard.html");
-                }
-            })
-    } else {
-        window.location.replace("signin.html");
-    }
-})
 
-fetch("http://127.0.0.1:5001/duobyte-471b8/us-central1/returnCourseInformation", {
-    method: "POST",
-    headers: {
-        "Content-type": "application/json;charset=UTF-8"
-    }
-})
-    .then(res => res.text())
-    .then(tr => {
-        let tr_parsed = JSON.parse(tr);
-        for (let i = 0; i < tr_parsed.length; i++) {
-            let btn_select = document.createElement("button", { class: "btn btn-primary" });
-            btn_select.innerHTML = tr_parsed[i]
-            btn_select.addEventListener("click", function (e) {
-                fetch("http://127.0.0.1:5001/duobyte-471b8/us-central1/onboardUser", {
+                if (tr.state == "user-doesnt-exist") {
+                    fetch("https://us-central1-duobyte-471b8.cloudfunctions.net/returnCourseInformation", {
                     method: "POST",
-                    body: JSON.stringify({
-                        uid: `${user.uid}`,
-                        first_course: `${tr_parsed[i]}`
-                    }),
                     headers: {
                         "Content-type": "application/json;charset=UTF-8"
                     }
                 })
                     .then(res => res.text())
                     .then(tr => {
-                        if (tr == "onboarding-successful") {
-                            monitorAuthStateAndOnboard();
+                        console.log(tr)
+                        let tr_parsed = JSON.parse(tr);
+                        let tr_keys = Object.keys(tr_parsed);
+                        for (let i = 0; i < tr_keys.length; i++) {
+                            let btn_select = document.createElement("button");
+                            btn_select.className = "btn btn-primary";
+                            btn_select.innerHTML = tr_parsed[tr_keys[i]];
+                            btn_select.addEventListener("click", function (e) {
+                                fetch("https://us-central1-duobyte-471b8.cloudfunctions.net/onboardUser", {
+                                    method: "POST",
+                                    body: JSON.stringify({
+                                        uid: `${user.uid}`,
+                                        first_course: `${tr_parsed[tr_keys[i]]}`
+                                    }),
+                                    headers: {
+                                        "Content-type": "application/json;charset=UTF-8"
+                                    }
+                                })
+                                    .then(res => res.text())
+                                    .then(tr => {
+                                        if (tr == "onboarding-successful") {
+                                            window.location.reload();
+                                        }
+                                    })
+                            })
+                            document.getElementById("course-selection").appendChild(btn_select);
                         }
-                    })
+                    });
+                  } else {
+                    window.location.replace("dashboard.html");
+                  }
+                
             })
-            document.getElementById("course-selection").appendChild(btn_select);
-        }
-    });
+    } else {
+        window.location.replace("signin.html");
+    }
+})
+
+

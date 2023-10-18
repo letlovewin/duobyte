@@ -33,7 +33,7 @@ onAuthStateChanged(auth, user => {
         })
             .then(res => res.text())
             .then(tr => {
-                if (tr == "N") {
+                if (tr.state == "user-doesnt-exist") {
                     window.location.replace("onboarding.html");
                 }
             })

@@ -33,7 +33,7 @@ const app = express();
 const firebaseConfig = {
     apiKey: "AIzaSyAXzjL21HzpSMWhTuHUrjKV-NcY8qjbnuU",
     authDomain: "duobyte-471b8.firebaseapp.com",
-    databaseURL: "http://127.0.0.1:9000/?ns=duobyte-471b8",
+    databaseURL: "https://duobyte-471b8-default-rtdb.firebaseio.com/",
     projectId: "duobyte-471b8",
     storageBucket: "duobyte-471b8.appspot.com",
     messagingSenderId: "739411745813",
@@ -53,12 +53,12 @@ exports.checkIfUserOnboarded = functions.https.onRequest((req, res) => {
         });
         logger.info(req.body);
         const cur_data = req.body;
-        const reference = db.ref('users/' + cur_data.uid);
+        const reference = db.ref(`users/${cur_data.uid}`);
         reference.on('value', (snapshot) => {
             if (snapshot.exists()) {
-                res.status(201).send("user-exists");
+                res.status(201).json({state:"user-exists",uid:cur_data.uid})
             } else {
-                res.status(201).send("user-doesnt-exist");
+                res.status(201).json({state:"user-doesnt-exist",uid:cur_data.uid})
             }
         })
     })
@@ -71,7 +71,7 @@ exports.returnCourseInformation = functions.https.onRequest((req,res)=>{
             "Access-Control-Allow-Origin": "*",
         });
         //we have course data in courses/
-        const reference = db.ref('courses');
+        const reference = db.ref('courses/');
         reference.on('value',(snapshot)=>{
             if(snapshot.exists()){
                 res.status(201).json(snapshot.toJSON());
@@ -110,10 +110,8 @@ exports.onboardUser = functions.https.onRequest((req,res)=>{
                 let uid = cur_data.uid;
                 let first_course = cur_data.first_course;
                 try {
-                    db.ref('users').set({
-                        uid: {
+                    db.ref(`users/${cur_data.uid}`).set({
                             courses: {first_course}
-                        }
                     })
                     .then(()=>{
                         res.status(201).send("onboarding-successful")

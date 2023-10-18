@@ -131,7 +131,7 @@ document.getElementById("btn-signup-redirect").addEventListener("click", functio
             })
                 .then(res => res.text())
                 .then(tr => {
-                    if(tr=="N"){
+                    if(tr.state == "user-doesnt-exist"){
                         window.location.replace("onboarding.html");
                     } else {
                         window.location.replace("dashboard.html");
