@@ -93,70 +93,6 @@ const createAccount = async () => {
   }
 }
 
-const monitorAuthStateAndOnboard = async () => {
-  //console.log(`hello ${window.location.pathname}`);
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      const data = JSON.stringify({
-        uid: `${user.uid}`,
-      });
-      fetch("https://us-central1-duobyte-471b8.cloudfunctions.net/checkIfUserOnboarded", {
-        method: "POST",
-        body: data,
-        headers: {
-          "Content-type": "application/json;charset=UTF-8"
-        }
-      })
-        .then(res => res.text())
-        .then(tr => {
-          if (tr == "user-doesnt-exist" && window.location.pathname != pathname_onboarding) {
-            window.location.replace("onboarding.html")
-          } else if (tr == "user-doesnt-exist" && window.location.pathname == pathname_onboarding) {
-            fetch("http://127.0.0.1:5001/duobyte-471b8/us-central1/returnCourseInformation", {
-              method: "POST",
-              body: data,
-              headers: {
-                "Content-type": "application/json;charset=UTF-8"
-              }
-            })
-              .then(res => res.text())
-              .then(tr => {
-                let tr_parsed = JSON.parse(tr);
-                for (let i = 0; i < tr_parsed.length; i++) {
-                  let btn_select = document.createElement("button", { class: "btn btn-primary" });
-                  btn_select.innerHTML = tr_parsed[i]
-                  btn_select.addEventListener("click", function (e) {
-                    fetch("http://127.0.0.1:5001/duobyte-471b8/us-central1/onboardUser", {
-                      method: "POST",
-                      body: JSON.stringify({
-                        uid: `${user.uid}`,
-                        first_course: `${tr_parsed[i]}`
-                      }),
-                      headers: {
-                        "Content-type": "application/json;charset=UTF-8"
-                      }
-                    })
-                      .then(res => res.text())
-                      .then(tr => {
-                        if (tr == "onboarding-successful") {
-                          monitorAuthStateAndOnboard();
-                        }
-                      })
-                  })
-                  document.getElementById("course-selection").appendChild(btn_select);
-                }
-              });
-          } else {
-            window.location.replace("dashboard.html")
-          }
-        });
-    } else {
-      //Kick user back to signin
-      window.location.replace("signin.html")
-    }
-  })
-}
-
 function forgotPassword(e) {
   e.preventDefault();
   if (validateEmail(document.getElementById("email").value) == true) {
@@ -196,7 +132,7 @@ onAuthStateChanged(auth, user => {
         if (tr.state == "user-doesnt-exist") {
           window.location.replace("onboarding.html");
         } else {
-          window.location.replace("dashboard.html");
+          window.location.replace("account.html");
         }
       })
   } else {

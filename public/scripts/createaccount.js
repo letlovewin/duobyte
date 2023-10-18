@@ -82,13 +82,14 @@ onAuthStateChanged(auth, user => {
                 "Content-type": "application/json;charset=UTF-8"
             }
         })
-            .then(res => res.text())
+            .then(res => res.json())
             .then(tr => {
                 if (tr.state == "user-doesnt-exist") {
                     window.location.replace("onboarding.html");
                 } else {
-                    window.location.replace("dashboard.html");
+                    window.location.replace("account.html");
                 }
+                //console.log(tr)
             })
     } else {
     }

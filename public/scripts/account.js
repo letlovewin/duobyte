@@ -31,11 +31,12 @@ onAuthStateChanged(auth, user => {
                 "Content-type": "application/json;charset=UTF-8"
             }
         })
-            .then(res => res.text())
+            .then(res => res.json())
             .then(tr => {
                 if (tr.state == "user-doesnt-exist") {
                     window.location.replace("onboarding.html");
                 }
+                document.getElementById("welcome-message-label").innerHTML=`Hi, ${user.displayName}.`;
             })
     } else {
         window.location.replace("signin.html");
