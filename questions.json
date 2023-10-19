@@ -1,0 +1,25 @@
+{
+    "courses" : {
+        "python": "Python",
+        "javascript": "Javascript"
+    },
+    "questions" : {
+        "python" : {
+            "unit1" : {
+                "num_lessons" : "3",
+                "lesson1" : {
+                    "question1" : {
+                        "prompt" : "Printing outputs data to the command line. To do this in Python, you have to use the print(x) command, with x being words or numbers. For example, you can have print('Hello!') which would make the command line say 'Hello!'?",
+                        "question" : "What would print(Hello!) (notice the lack of quotations) result in?",
+                        "answer_choices" : {
+                            "choice1" : "Invalid",
+                            "choice2" : "Hello!",
+                            "choice3" : "Hello",
+                            "choice4" : "print(Hello!)"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
