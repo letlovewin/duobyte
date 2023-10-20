@@ -20,6 +20,10 @@ const auth = getAuth(firebaseApp);
 //connectAuthEmulator(auth, "http://localhost:9099");
 //connectStorageEmulator(storage, "127.0.0.1:9199");
 
+const correct_audio = new Audio('sounds/correct.mp3');
+const incorrect_audio = new Audio("sounds/incorrect.mp3");
+const victory_audio = new Audio("sounds/victory.mp3");
+
 onAuthStateChanged(auth, user => {
     if (user) {
         const data = JSON.stringify({
